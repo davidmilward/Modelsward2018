@@ -1,0 +1,49 @@
+grammar uk.ac.ox.cs.MML with org.eclipse.xtext.common.Terminals
+
+generate mML "http://www.ac.uk/ox/cs/MML"
+
+MML :
+	(elements += AbstractItem)*
+;
+
+
+DataModel:
+	'DataModel' name = QualifiedName '{'
+	(elements += AbstractItem)*
+	'}'
+;
+
+AbstractItem:
+	DataModel | DataClass | DataType | Import
+;
+
+QualifiedName:
+		ID('.' ID)*
+;
+
+Import:
+	'import' importedNamespace = QualifiedNameWithWildcard
+;
+
+QualifiedNameWithWildcard:
+	QualifiedName '.*'?
+;
+
+
+DataType:
+	'DataType' name = ID
+;
+
+ContainerElement:
+	DataClass| DataElement
+;
+
+DataClass:
+	'DataClass' name = ID ('extends' superType = [DataClass])? '{'
+	  (dataelements += ContainerElement)*
+	  '}'
+;
+
+DataElement:
+	'DataElement' name = ID ':' type = [DataType|QualifiedName]
+;

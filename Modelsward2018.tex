@@ -1,0 +1,1184 @@
+\documentclass[a4paper,twoside]{article}
+
+\usepackage{epsfig}
+\usepackage{subfigure}
+\usepackage{calc}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{multicol}
+\usepackage{pslatex}
+\usepackage{apalike}
+\usepackage{graphicx}
+\usepackage{makeidx}
+\usepackage{listings}
+\usepackage{url}
+\newtheorem{observation}{Observation}
+\usepackage{zed}
+\usepackage{algpseudocode}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\def\composition{{\mathrel{\oplus}}}
+\def\optional#1{#1 [0\upto 1]}
+\def\Mu{\mu}
+\def\ms#1{{#1}}
+\def\PA{\ms{PA}}
+\def\PC{\ms{PC}}
+\def\op{\underline{\smash{{op}}}}
+\def\sor{\mathrel{\mathsf{or}}}
+\def\orElse{\mathrel{\mathsf{or}}}
+\newlength\zedminipagewidth
+% we define a set of macros for constants of type 'Kind' 
+
+\def\datamodel{\mathsf{datamodel}}
+\def\dataclass{\mathsf{dataclass}}
+\def\dataelement{\mathsf{dataelement}}
+\def\enum{\mathsf{enum}}
+\def\enumeration{\mathsf{enumeration}}
+\def\primitivetype{\mathsf{primitivetype}}
+\def\datatype{\mathsf{datatype}}
+\def\tag{\mathsf{tag}}
+\def\dataitem{\mathsf{dataitem}}
+\def\abstractitem{\mathsf{abstractitem}}
+
+% and for multiplicity 
+
+\def\optional{0{\upto}1}
+\def\mandatory{1{\upto} 1}
+\def\many{0{\upto}*}
+
+% partial ordering on constraints
+
+\def\Cimplies{\mathrel{\implies_c}}
+\def\Ciff{\mathrel{\iff_c}}
+
+%  partial ordering on text
+
+\def\Timplies{\mathrel{\implies_t}}
+\def\Tiff{\mathrel{\iff_t}}
+
+% and conjunction 
+\def\Tand{\mathrel{\land_t}}
+\def\TAnd{\mathop{\land_t}}
+% our globalised version of the defining relations
+\def\refines{\mathrel{refines}}
+\def\newVersionOf{\mathrel{newVersionOf}}
+\def\extends{\mathrel{extends}}
+\def\contains{\mathrel{contains}}
+% we may have \sqsubseteq and \gg when it comes to analysis 
+% our two status values 
+\def\draft{\mathsf{draft}}
+\def\final{\mathsf{final}}
+%load any additional packages
+
+\newcommand\Algphase[1]{%
+	\vspace*{-.7\baselineskip}\Statex\hspace*{\dimexpr-\algorithmicindent-2pt\relax}\rule{\textwidth}{0.4pt}%
+	\Statex\hspace*{-\algorithmicindent}\textbf{#1}%
+	\vspace*{-.7\baselineskip}\Statex\hspace*{\dimexpr-\algorithmicindent-2pt\relax}\rule{\textwidth}{0.4pt}%
+}
+
+\newtheorem{definition}{Definition}
+\newcommand{\Lagr}{\mathcal{L}}
+
+\usepackage{SCITEPRESS}  % Please add other packages that you may need BEFORE the SCITEPRESS.sty package.
+
+\subfigtopskip=0pt
+\subfigcapskip=0pt
+\subfigbottomskip=0pt
+
+\begin{document}
+
+\title{Semantic Interoperability in Healthcare through Model Driven Engineering }
+
+\author{\authorname{David Milward}
+\affiliation{\sup{1}Department of Computer Science, Oxford University, U.K.}
+\email{david.milward@cs.ox.ac.uk}
+\affiliation{\sup{2}Supervised by: Prof Jim Davies  }
+}
+
+\onecolumn \maketitle \normalsize \vfill
+
+\section{\uppercase{RESEARCH PROBLEM}}
+\label{sec:objectives}
+
+\noindent Medical data in the UK NHS comes in many different shapes and sizes, and varies from highly structured and rigorously controlled data conforming to managed ontologies and datasets to photographed collections of handwritten and mostly illegible clinician notes. 
+
+Data interoperability in healthcare in the UK has only been partially achieved for a small number of specific use cases, overall despite the heavy investment in new technologies the majority of patient data and clinical trial results remain in local silos, unavailable for most medical research. Where specific funding is made available for specific projects, such as with Genomics England (REF), an effort is made to integrate research data and patient data.  
+
+However most data in the U.K.'s National Health Service (NHS) remains unaccessible for medical research. This is because it is held in a variety of commercial software systems which have been built at different times, and have been based on different standards.  There are over 130 different data models and standards (ref: TRUD REF) currently being used in the NHS at present, and new ones are being introduced and implemented each year. At present the UK NHS is preparing to implement SNOMED across all systems by 2020, this has largely been achieved in primary care, but has hardly been started in secondary care systems. The main reason for the success in primary care is down to the fact that there are 5 main vendors of primary care systems, all of whom regard teh UK primary care market as a major part of their business, and hence all of them have agreed to implement the standard.  
+
+However in secondary care the larger hospital trusts will be running 2-300 different systems, many of these from vendors with bases outside the UK, who have little incentive to make major changes to systems which they are selling in a minority marketplace. Efforts by NHS England and NHS Digital to impose standards have met with partial success with specific standards in specific areas, but so far no one standard has been adopted across the board. 
+
+As well as the technical challenges, there are also legal issues imposed by the Health and Social Care Act 2012, NHS Act 2006, the Health and Social Care Act 2012, the Data Protection Act 1998, the Human Rights Act, and the shortly to be introduced General Data Protection Regulations.  The complexity of these different acts results can result in data on a patients other conditions (say liver disease) being withheld from Emergency Care Clinicians when they are performing for instance emergency heart surgery. Whilst such legislation clearly is intended to protect the patient's privacy, it can have unforseen side effects not only on emergency medical care, but also on the ability and ease in which medical data can be aggregated for further research purposes.
+
+Medical data when aggregated is generally stored in relational databases, excel spreadsheets or unstructured pdf and word documents, and querying this data can be very difficult in all these cases. Reports are sent through to NHS Digital to satisfy reporting requirements in hundreds of different spread-sheet formats, with no real verification on the datasets contained. There is no question that the information could be valuable for research, however extracting data for analysis is very often too costly to perfrom.  When datasets are prepared for analysis it is often discovered that the structure of the data when stored may not be the same as the structure it is required in now, and there maybe no exact record of how the data was originally recorded. For instance gender may be stored in one system as an enumeration of \emph{yes or no} and in another system as \emph{yes, no, unknown}, if we write a query assuming the former then we may arrive at incorrect conclusions if the data is actually collect in the format of the latter, but assumed to be conforming to the former. 
+
+
+\section{\uppercase{OUTLINE OF OBJECTIVES}}
+\noindent This work started in examining ways in which semantic interoperability could be achieved within the Healthcare sector. \emph{Semantic web} technology has been used to solve some of these interoperability concerns within the healthcare domain, and so have a number of other  data standards technologies. Most of these, like the semantic web solutions, fail because mostly because they seek to impose a  \emph{fixed-framework} type solution across the board. By fixed-framework solution I mean one which assumes that a trust or group of trusts will impose one framework for everything, for instance all the data will from time a be stored in triple-stores, or from time b all suppliers of oncology-related systems will use ICD10 coding for their datasets. Such \emph{fixed framework} solutions generally need a significant investment in ETL technology to make them work with legacy data, and so initially they are no less expensive as just employing an ETL solution.
+
+In this work I have investigated ways in which a solution can be found which is practical enough to work with multiple dataset standards, multiple datastores and multiple systems. My objectives are to explore ways in which semantic interoperability can be achieved, or at least partially achieved, with existing technology, by using model driven engineering principles and applying these to the way in which data is stored, transformed and analysed within the UK Healthcare sector.
+
+Initially I looked at applying the principles defined in the ISO11179 \cite{ISO11179} standard to UK Healthcare data standards, however having built a prototype metadata registry on the lines described the standard was found to be flawed and very difficult to apply in practise. The standard itself was ambiguous and hard to understand for terminologists and clinicians, and as a result many features were not used, and many meta-data points were simply ignored.
+
+The metadata registry continured to be developed in partnership with Genomics England over a 2 year period, and the meta-model refined by practical results. Soon after the start of this exercise a separate piece of work was undertaken to define a formal meta model was defined in Z, and this is the basis for the third version of the metadata registry, which is currently only available as prototype. Initially the idea was to clarify the ideas outlined in the ISO11179 standard, but this exercise still has to be completed.
+
+Lack of Semantic Interoperability results in many problems, and is at the heart of most interoperability issues. For this these we focus on a few core problems which are listed below:
+\begin{itemize}
+	\item Data Loss
+	\item Change of Meaning
+	\item Addition of Data Points
+	\item Lack of Continuity 
+\end{itemize}
+
+\subsubsection{Data Loss}
+
+Data loss, or more accurately \emph{semantic loss} can occur when converting data from one format to another, in a situation where some data-points are omitted from the conversion or transformation routines, very often deliberately to save time or improve efficiency, or because it is too difficult to change formal and structure of the \emph{target} system. Arguably this isn't always a direct problem, but very often emerges when the dataset is re-evaluated or needs to be fused at some point in the future. To illustrate this problem we can consider the issue of transgender patients. If we take clinical trial data from a physical form which has been completed by patients taking a clinical trial, where the data is written in long-hand, we may have for instance classified a  person's gender using five check-boxes denoting male, female, phenotype-male, phenotype-female or not known. The idea being that people who are trans-gender and have moved from being male at birth to being female at some point will tick both female and phenotype male. This data is then manually imported into a web-based form which has 3 fields: male, female or unknown - someone looks at the form and clicks boxes on a web-form.  Clearly the intent will be to preserve as much of the data as possible, however there will need to be rules made to deal with ambiguities.  We may therefore lose the information given by ticking both female and male-phenotye (indicating a transgender person), if the data pertaining to that person is then used in say studies of the female reproductive system the results may be biased.  Obviously this depends on how many studies are used, how many are people are in the study of transgender origin, and what rules the person who is making the manual import follows when actually carrying out the data import, do they assign our transgender person to \emph{female} or \emph{unknown}, and is this assignment recorded on the dataset as relevant metadata for future reference.
+
+
+\subsubsection{Change of Meaning}
+
+Change of meaning is the problem is very often related to data loss, in that we have a item let's say height, which is referenced in a dataset, and referenced to a particular measurement unit, let's say \emph{metres}, however some detail such has been left out. For most clinical studies height is measured by a nurse, with patient removing their shoes before the measurement, for the simple reason that this removes any potential error in people either exagerating or not knowing their height. The height data at the start of a trial is assumed to be measured in the same way for the entire period of the trial, if not then perhaps errors will creep into the results, such as this particular drug causes height reduction or increase as a side effect. Such issue is unlikely to emerge in one trial taking place in a single hospital by the same team, but errors could creep in with trials taking place by many teams in many different hospitals and departments.
+
+Change of meaning should be solved by reference to some kind of dictionary, and perhaps some kind of reference point for the units of measurement used, one is unlikely to make a mistake with metres as in this example, but with drug calculations one will need more precision. Drips are very often specified in units, such as 5000 units of hesparin, but a nurse will need to convert that to perhaps units/hour, or mcg/kg/minute or mg/hour, and will need to know the patients weight. It may be that just the unit amount is specified on the data collection form, but the form doesn't say how fast the infusion was given. 5000 units taken in 1 hour as opposed to over 2 hours may have a significant impact on the study, and may indeed mean that two different trials recording austensibly the same data are in fact recording two entirely different things.
+
+
+\subsubsection{Addition of Data Points}
+Clnical studies evolve, and while one set of questions is asked at the start of a trial, some trials continue for many years, and as a result different questions start to be asked at later stages. In particular data points are added to datasets, if we look at the previous examples we could easily record the dosage of a drug at the beginning of a trial, without mentioning how fast it delivered, and then we can add a data point towards tehn end which does record the speed of delivery. The dataset has changed, but how should the data be treated when it is fused with another study, that maybe does or does not include speed of delivery.
+\subsubsection{Lack of Continuity}
+Clinical Studies also face the problem that data may be available from paper, or electronic recording means (excel or csv files) and there is no real recording of the exact set of expected answers at the time of the study. For instance a data item such as the \emph{Basis of the Cancer} may be recorded from a list of \emph{enumerations}, which are currently listed as :
+
+\begin{itemize}
+	\item 0	Death Certificate: The only information available is from a death certificate
+	\item 1	Clinical: Diagnosis made before death but without the benefit of any of the following (2-7)
+	\item 2	Clinical Investigation: Includes all diagnostic techniques (e.g. X-rays, endoscopy, imaging, ultrasound,
+	\item 4	Specific tumour markers: Includes biochemical and/or immunological markers which are specific for a tumour site	
+	\item 5	Cytology: Examination of cells whether from a primary or secondary site, including fluids aspirated using endoscopes or needles. Also including microscopic examination of peripheral blood films and trephine bone marrow aspirates
+	\item 6	Histology of a metastasis: Histological examination of tissues from a metastasis, including autopsy specimens	
+	\item 7	Histology of a primary tumour: Histological examination of tissue from the primary tumour, however obtained, including all cutting and bone marrow biopsies. Also includes autopsy specimens of a primary tumour
+	\item 9	Unknown: No information on how the diagnosis has been made (e.g. PAS or HISS record only)
+\end{itemize}
+
+The problem occurs when researchers come across significant findings which record the \emph{Basis of the Cancer} as 3 and 8.
+
+
+ 
+
+\section{\uppercase{STATE OF THE ART}}
+
+
+
+\subsection{ISO/IEC 11179}
+
+The work described in this paper has built upon work carried out for the CancerGrid project~\cite{davi14}, where an ISO11179-compliant metadata registry was developed for curation of semantic metadata and model-driven generation of trial-specific software~\cite{davi12, Abler2011}.  The approach to generating forms in the CancerGrid project has been generalised significantly with the introduction of a data modeling language and a broader notion of semantic linking. 
+
+Another effort to develop an implementation of ISO11179 is found in the US caBIG initiative~\cite{kunz09}; however, their caCORE software development kit~\cite{koma08} applies model-driven development only to
+generate web service stubs, requiring developers to create application
+logic by hand, whereas our technique integrates with existing clinical
+Electronic Data Capture tools and workflows, such as
+OpenClinica~\cite{oc}. 
+
+More recently an ISO11179 compliant metadata registry \cite{MDRHL7} has been used to help map data for the North German Tumor Bank of Colorectal Cancer. Clinical and sample data, based on a harmonized data set, is collected and can be pooled by using a hospital-integrated Research Data Management System supporting biobank and study management.
+
+\subsection{Ontology modelling}
+
+%%%% ontological representations of ISO11179 %%%%%%%%
+
+Several efforts have addressed ontological representations of ISO11179 
+for enabling data integration across metadata
+registries (MDRs). Sinaci and Erturkmen~\cite{Sinaci2013784} describe a
+federated semantic metadata registry framework where Common Data
+Elements (CDEs) are exposed as Linked Open Data resources. CDEs are
+described in the Resource Description Framework (RDF), and can be queried and interlinked with CDEs in other
+registries using the W3C Simple Knowledge Organization System (SKOS). 
+An ISO11179 ontology has been defined as part of
+the framework, and the Semantic MDR has been implemented using the Jena
+framework. 
+Jeong \textit{et~al.}~\cite{pmid25405066} present the Clinical
+Data Element Ontology (CDEO) for unified indexing and retrieval of
+elements across MDRs; they organise and
+represent CDEO concepts using SKOS. 
+Tao \textit{et~al.}~\cite{pmid22211181} present
+case studies in representing HL7 Detailed Clinical Models (DCMs) and
+the ISO11179 model in the Web Ontology Language (OWL);
+a combination of UML diagrams and Excel
+spreadsheets were used to extract the metamodels for fourteen HL7 DCM
+constructs. A critical limitation of this approach is that the
+transformation from metamodels to their ontological representation in
+OWL is based on a manual encoding. 
+Leroux \textit{et~al.}~\cite{lero12} use existing
+ontologies to enrich OpenClinica forms; our Model Catalogue
+technique can integrate these ontologies to capture compliant data in
+a similar fashion, but does so by using an ISO11179 meta data registry
+and model driven methodology.
+
+Ontology repositories can be considered closely analogous to model
+catalogues, they provide the infrastructure for storing, interlinking,
+querying, versioning and visualising ontologies. Relationships
+capturing the alignments and mappings between ontologies are also
+captured, allowing easy navigability. Linked Open
+Vocabularies~\cite{LOV} provides a service for discovering
+vocabularies and ontologies published following the principles of
+linked data. Besides the above features, it provides documentation
+about ontologies automatically harvested from their structure and
+identifies dependencies. Apache Stanbol~\cite{Stanbol} provides a set
+of reusable components for semantic content management. The Apache
+Stanbol Ontology Manager provides a controlled environment for
+managing ontologies and ontology networks. 
+
+
+\subsection{Data warehousing}
+
+In data warehousing~\cite{kim02}, metadata is modelled in order to copy
+information from business systems into a centralised `data warehouse',
+for decision support and to analyse business performance. Data
+warehouse models can be arranged in normalised form, following the
+relational approach~\cite{inm92}, or `dimensional' form~\cite{kim02}
+as quantifiable \emph{facts} and \emph{dimensions} which denote the
+context of facts. The Common Warehouse Metamodel (CWM)~\cite{poole03}
+from the Object Management Group is a UML-based framework to enable
+data warehousing in practice. Data warehousing is focused on
+write-once models, and for working with rigidly structured data; this
+is in contrast to the more general approach taken in ISO11179, where
+models are expected to evolve and change over time. 
+The core metamodel of the CWM standard overlaps with the 
+\emph{concept} and \emph{value} elements of the ISO11179 meta model.
+
+\subsection{Model-driven engineering for e-Health}
+
+Several examples of model-driven engineering for e-Health software are
+reported in the literature~\cite{dav14,ragh08,blob07,kham08,schl15}.
+Payne~\cite{pay12} formalises the typical pattern followed in these
+methods: a multi-phase approach, where data modelling is a separate
+phase from stakeholder engagement and data integration. This approach
+is taken Khambati \textit{et~al.}~\cite{kham08}, where an
+Eclipse-based tool is used to develop domain-specific languages to
+model and generate tools for mobile health-tracking applications. The
+advantage of the approach is the ability it provides for clinicians to
+modify the model of the study, which is specified in the DSL, and
+automatically regenerate the application from the model. A similar
+approach is taken in the \emph{True Colours} system~\cite{dav14},
+using the Booster model-driven toolkit to derive a patient
+self-monitoring application for mental health. The Booster approach
+demonstrates the lesson that data tends to be managed better within a
+model-driven process, leading to higher quality and more reusable
+assets.  Schlieter \textit{et~al.}~\cite{schl15} record their
+experience gained from using model-driven engineering to implement an
+application for path-based stroke care; amongst the lessons learned,
+they recommend using existing ontological models where possible, and
+being prepared to reconcile a heterogeneity of models from the various
+stakeholders under a common metamodel.  In contrast to these systems,
+our metadata-oriented approach supports the creation of applications
+that can interoperate with existing data, standards and
+systems. Rather than simply using MDE to develop stand-alone systems,
+MDE processes are used in the management of clinical trials metadata
+from which software is derived.
+
+In the Model Driven Health Tools (MDHT)~\cite{MDHT} project, the HL7
+Clinical Document Architecture (CDA) standard~\cite{doli06} for
+managing patient records is implemented using Eclipse UML
+tools~\cite{EUML}. The benefits of applying MDE
+are clear: modelling tools are used to model the CDA standards, and
+interoperable implementations of the standard are automatically
+derived from the models.  The CDA standards are large and complex: 
+Scott and Worden~\cite{sco12} advocate a
+model-driven approach to simplify the HL7 CDA,
+supported by three case studies: the NHS England `Interoperability
+Toolkit', simplification of US CDA documents, and the Common
+Assessment Framework project for health and care providers in
+England. 
+
+\subsection{Electronic data capture}
+
+A range of tools are available for clinical Electronic Data Capture
+(EDC), including Catalyst Web Tools~\cite{catalyst},
+OpenClinica~\cite{oc}, REDCap~\cite{harr09}, LabKey~\cite{labk} and
+Caisis~\cite{cais}. Franklin \textit{et~al.}~\cite{fran11} present
+a two-year case-study comparing EDC tools, 
+and Leroux \textit{et~al.}~\cite{lero11} report on
+a further study comparing Clinical Trials Management Systems. 
+We use the Model Catalogue tool to generate
+case report forms for OpenClinica, but in principle any EDC tool could be
+supported. 
+
+The state of the art in EDC is represented by the Research Electronic Data
+Capture (REDCap)~\cite{harr09} web-based application, which
+supports metadata capture for research studies, providing an online
+interface for data entry, audit trails, export to common statistical
+packages and data import from external sources. Like the Model
+Catalogue, the REDCap system focuses on the clinical
+metadata. However, REDCap and similar EDC tools are typically 
+insular systems, importing any data into a centralised data silo;
+in contrast, the Model
+Catalogue aims to provide a platform to support and integrate 
+existing data stores
+and systems within the clinical environment.
+
+There is also a distinction in the level of expertise expected to operate
+the tools. The metadata management --- creation, revision, sharing~--- in
+EDC is typically considered a IT-specialist task~\cite{harr09,fran11}, requiring
+experts to initialise the metadata separately for each study. With the Model
+Catalogue, clinical domain specialists have the ability to adapt and modify
+metadata as needed, and treat models as the central
+artefacts. Effectively, the Model Catalogue follows the same metadata
+workflow as REDCap, but without the need for modelling experts to
+develop, adapt or share the metadata models. 
+
+\section{\uppercase{METHODOLOGY}}
+
+\noindent I started working in this project with a ISO11179 conformant metadata registry, which was used to achieve interoperability between different datasets, however although that objective was achieved the work was not entirely successful due to some inconsistencies in the way the standard is defined.  The original experiments with linking data did achieve some success in establishing the use of linking at a higher level of abstraction, however since the meta-model was not formally defined it was very difficult to reason over that model. Therefore one of the first stages of this work was to define a formal metamodel.
+
+A metamodel, such as the kind defined in Ecore or UML using MOF provides a basis for translation and code generation using a wide range of model driven tools, such as ATL or XText. The core model, simply referred to as the meta-modelling language (MML) was specified using Z, informed by the results of the original ISO11179 trial usage in the NHIC project. This gave a formal basis to further developments, a grammar was developed using XText which enabled datasets to be defined using MML, and allowed access to the Eclipse toolkit to compose, construct and modify such datasets. 
+
+
+
+Datasets are defined in a number of ways, some such as SNOMED are provided as an OWL ontology, or to be more precise provided as a text file which can be used with a PERL program to re-construct an OWL ontology. It is also distributed as a relational database, a set of DLL scripts which can then be imported into a relational data-store such as Postgres or MySQL. Other datasets are defined using either XSD files, Excel files or even a combination of text and CSV files. Data from the Human Phenotype Ontology is available in OWL or OBO format. I have build importers to import data from excel, using VBA scripts, from XSD using groovy/java XML libraries and from OBO files using groovy scripts. Some work was undertaken to import data directly from OWL, but is not complete at this point in time.
+
+Having imported several medical dataset definitions the task is to show that using a meta-model to carry out semantic integration is more efficient than simply relying on extract transform load (ETL) technology. I have done this by taking sample data for cancer patients as defined by 3 different models: HPO, COSD and FHIR, each one in a separate relational database. I have then detailed the process needed to map the 3 schemas, and run simple queries over them. I have then set up a similar setup using a metadata registry, but by mapping the meta-models to a central metamodel the ETL integration process time is reduced, the querying time is reduced and so is the incremental adjustment work in maintaining the metadata registry setup over the ETL setup.
+
+
+
+
+
+
+
+
+\cite{} 
+
+
+
+\subsection{Manuscript Setup}
+
+\noindent 
+
+\section{\uppercase{EXPECTED OUTCOME}}
+
+\noindent At this point the research project has yielded good results in illustrating how metadata can be used to simplify and streamline the process of managing large datasets. The project has taken much longer than expected, partly due to the need to establish a solution which would work in a real-world environment, rather than simply suggesting solutions which could only be applied in an ideal academic envionrment. 
+
+\section{\uppercase{STAGE OF THE RESEARCH}}
+\noindent This section of the project is close to completion, and will be completed within 2 months of this paper being presented. However the work apply model based engineering techniques to data management will continue. 
+
+\bibliographystyle{apalike}
+{\small
+\bibliography{Modelsward2018}}
+
+
+\section*{\uppercase{Appendix}}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\noindent 
+\subsection{Meta Modelling Language (MML)}
+
+
+This metamodelling langauge (MML) is constructed for data interoperability and it has a metamodel \textbf{$M_2$} defined at level M2 of MOF. The language can be designated by $\Lagr_{m2}$ and a meta-model ML is formally defined by this language $\Lagr_{m2}$.
+
+It is aimed at Information Systems, which are simply storing and handling data, so at present we are not looking at having the language capture \emph{behaviour}, it is simply a \emph{structural meta-language} for describing data items. 
+
+Most information systems use a variety of mechanisms to store data, from text files to relational databases, all of which can be modelled at the M1 level.  In fact we can say that the M1 languages which model the data can be designated by $\Lagr_{m1}$, each one defining a Model which we can designate by MI = (mi\_1, mi\_2, ...., mi\_n).  MI being the collection of Models that \emph{conform to} or \emph{implement} MML.  
+
+An example of a \emph{Data Language (say mi\_1)} at this M1 level of abstraction would be the UK NHS's Cancer Outcomes and Services Dataset (COSD) which is a dataset specifying the terminology to use when writing reports on cancer. At present the dataset is defined by both an excel file and an XSD.  Within the NHS there are plenty of other similar datasets, which are used in reports, in databases or by applications.  Whilst MML will not be a fit for every dataset, it is aimed at covering most structural features that occur in datasets, it can be viewed as a subset of Ecore tailored to the domain of data management.
+
+In defining MML we take the notion of a \emph{dataElement} as the core entity in the language, historically it was intended to correspond to a \emph{data element} in ISO11179 and with an \emph{element} in the UML meta-model. It is an atomic data item, capturing one single element that cannot be sub-divided.
+
+The word or stem \emph{abstract} is used in several different ways in this discussion, and the following brief discussion highlights the different usages.  
+
+Firstly we can have an abstract entity which is the implementation of an EClass at the M3 level, that is to say a representation of in our language of an EClass which cannot be implemented at the M2 level. It can be \emph{sub-typed} by another EClass at the M2 level and this \emph{sub-class} can be implemented. We use this mechanism to specify both AbstractItem and DataItem as \emph{abstract} entities in our language, however we are not defining an \emph{abstraction} mechanism for MML per se. Later on we will define an inheritance or rather a simple sub-typeing mechanism which can be used for \emph{templating} at the M1 model level. 
+
+Secondly we are referring to each layer as being an \emph{abstraction} of the previous layer, and therefore having less concrete description, this is the notion built into the idea of MOF layers. 
+
+\subsection{Language Entities}
+
+The overall item in our language is a \emph{DataModel}, a DataModel will contain other DataItems, which in turn can be made up from a number of different entities.
+
+We introduce an entity called a \emph{DataClass}, in order to group and classify DaaItems, a \emph{DataClass} is similar to a \emph{class} in UML, and in other languages such as Java. A DataClass can contain DataElements, and it can also contain other DataClasses. DataClasses are grouped into DataModels which represent a unitary collection of data entities which can be managed and versioned together, in practise these will correspond with current datasets such as COSD~\cite{COSD}, curated datasets used for a singular purpose in a particular domain, such as Healthcare. In UML the \emph{grouping} mechanism is the \emph{class}, however within ISO11179 a mechanism of grouping on either \emph{object class} or \emph{property} is mandated, this has no meaning within the model driven world so we cannot use it here. 
+
+
+We need to introduce some general sets, to model things like identifiers, names etc, hence:
+\begin{zed}
+	[Text, Id, Term, Name, IRI, Type, GUID, Value, \\ Constraint]
+\end{zed}
+
+
+At a basic level the language is dealing with AbstractItems, any of which can represent a piece of data. These \emph{AbstractItems} can form relationships with other items, so that any item in the language can have a relationship with any other item, unless contrained not to. Any item can \emph{own} or \emph{contain} any number of \emph{Tags}, which can reference other data items outside of this particular model, using a URI as its identifier.  
+
+We need to model the basic entities in our new language:
+\begin{syntax}
+	Kind & ::= & \abstractitem \mid \datamodel \mid \dataitem\\ \mid \dataclass 
+	& \mid & \tag \mid \dataelement  \mid \datatype \mid \enum \\
+	& \mid & \enumeration \mid \primitivetype 
+\end{syntax}
+
+At present we are not consdering \emph{Relationship} and \emph{Tag}, since we can define them using set theory and \emph{Text} typed sets.
+
+A dataelement has multiplicity: the three values that are important
+to us are as follows:
+\begin{syntax}
+	Multiplicity & ::= & \optional \mid \mandatory \mid \many 
+\end{syntax}
+
+It has also ordering 
+\begin{syntax}
+	Ordering & ::= & ordered \mid notOrdered 
+\end{syntax}
+
+
+These refer to other items, using identifiers rather than names, and will become useful in identifying similar entities in different hetrogeneous systems. The intended semantics of an item consists primarily in its textual explanation, additional semantics comes from the relationships that the entity has with other dataitems.
+
+\begin{schema}{AbstractItem}
+	id : Id \\
+	name : Name \\
+	text : Text \\
+	kind : Kind \\
+	refines, newVersionOf : \power Id
+	\where
+	kind = \abstractitem
+\end{schema}
+
+\subsubsection{Relationships and Links}
+
+For the most part we can use the binary relation  $ A \rel B $ to develop the first iteration of the Lemma language, and re-introduce the schema in a later refinement. However for continuity with the previous chapter we introduce schemas to describe the entities introduced there. 
+
+Each relationship can connect two or more AbstractItems, each one connected with a role,  by specifying a schema to match the language entity as follows:
+
+\begin{schema}{Relationship}
+	name: Name \\
+	id: Id \\
+	multiplicity: \power \nat \\
+	role1: AbstractItem \\
+	role2: AbstractItem
+\end{schema}
+
+So if we have a Doctor, represented by an instantiation of a DataClass and a Patient represented by an instantiation of a different DataClass, their relationship may be represented by a pair of roles : \emph{treating}, and \emph{treatedBy}, it may have a name \emph{consult}, and it is conceivable that their maybe more than one relationships between these two entities. 
+
+Every item of data in our model can be tagged, that is it can \emph{own} zero or more Tag objects, which will be instantiations of the \emph{Tag} entity:
+
+\begin{schema}{Tag}
+	name: Name \\
+	id: Id \\
+	reference: Id \\
+	label: Text \\
+	kind:Kind
+	\where
+	kind = \tag
+\end{schema}
+
+
+
+\subsubsection{Types}
+
+Starting with a DataType first, this is in itself an abstract class which has 3 sub-classes:
+
+We use PrimitiveType to represent the basic common types that are found in most computing languages, including UML.
+
+\begin{schema}{PrimitiveType}
+	AbstractItem\\
+	values: \power Value
+	\where
+	kind = \primitivetype
+\end{schema}
+
+The PrimitiveType is the basic singular type used in Lemma, in this definition it is a sub-class of DataType, so we include DataType in the schema.  The type will be one of the set TYPE, which at present is undefined, but we would expect it to comprise the main UML Primitive types : Boolean, Integer, Real, UnlimitedNatural, String. In later refinements we will introduce these types into the specification.
+
+
+\begin{schema}{Enumeration}
+	AbstractItem \\
+	enums : \power Id 
+	\where
+	kind = \enumeration
+\end{schema}
+
+The Enumeration is simply a collection of Enums. An Enum is a value, it could be represented as a String, but we will simply introduce it as a set.
+
+\begin{schema}{Enum}
+	AbstractItem \\
+	value : \power Value 
+	\where
+	kind = \enum 
+\end{schema}
+
+Z does not allow for cyclic references, so it is - so far - not possible to define the requirements that the attribute of a DataClass can be another DataClass. I will attempt to clarify this in the next section.
+
+\begin{schema}{ReferenceType}
+	AbstractItem\\
+	relation : \power Id
+\end{schema}
+
+\subsubsection{DataElements}
+DataElements are the atomic DataItem instance, however they can have multiplicity and ordering. 
+
+\begin{schema}{DataElement}
+	AbstractItem \\
+	multiplicity : Multiplicity \\
+	ordering : Ordering \\
+	type : Id 
+	\where
+	kind = \dataelement
+\end{schema}
+
+
+\subsubsection{DataClasses}
+
+And a DataClass:
+
+\begin{schema}{DataClass}
+	AbstractItem \\
+	elements : \power Id \\
+	extends : \power Id \\
+	components : \power Id 
+	\where
+	kind = \dataclass
+\end{schema}
+
+Each DataElement has a one-to-one association with a DataType, although that DataType may have a one-to-many association with a number of DataElements. The DataType defines how the DataElement is represented in this DataModel. 
+
+\subsubsection{Constraints}
+
+We can model the constraint from the previous chapter as a schema.
+
+\begin{schema}{ModelConstraint}
+	id: Id\\
+	contraint: Text\\
+	language: Text
+\end{schema}
+
+We can also define an implication ordering which exists as a partial order on this given type.
+%%inrel \Cimplies 
+\begin{axdef}
+	\_ \Cimplies \_ : ModelConstraint \rel ModelConstraint 
+	\where
+	\id ModelConstraint \subseteq (\_ \Cimplies \_) \\
+	(\_ \Cimplies \_) \cap (\_ \Cimplies \_) \inv = \id ModelConstraint   
+\end{axdef}
+
+\begin{syntax}
+	Status & ::= & \draft \mid \final 
+\end{syntax}
+
+\begin{schema}{DataModel}
+	AbstractItem \\
+	guid : GUID \\
+	dataclasses, enumerations, primitivetypes : \power Id \\
+	imports : \power Id \\
+	constraint : ModelConstraint \\
+	status : Status 
+	\where
+	kind = \datamodel
+\end{schema}
+
+
+\subsection{The Structure of a DataModel}
+
+A Lemma model or DataModel can be said to be composed of the entities previously defined, it is a container of DataItems in essence.
+
+\begin{zed}
+	DataItem \defs DataModel \lor DataClass \\ \lor DataElement \lor Enumeration \\ \lor PrimitiveType  \lor Enum
+\end{zed}
+
+The \emph{AbstractItems} have not been included since they are not instantiated directly, the DataModel is the only direct \emph{concrete} sub-class of AbstractItem, while DataItem is another \emph{abstract} entity which is parent to DataClass, DataElement and DataType. DataType in turn is parent to PrimitiveType, ReferenceType and Enumeration.  By using the DataItem as defined above we are in this specification ignoring the abstract classes - and the ReferenceType class - so that we can reason about the concrete entities.
+
+A DataItem is a subclass of AbstractItem, but it is also \emph{Abstract}, it's concrete subclasses are listed as DataClass, DataElement, Enumeration, PrimitiveType and Enum.
+
+\begin{zed}
+	[dataItem, dataClass, dataElement, dataType, enum]\\
+	dataItems ::= \\
+	dataclass\ldata dataClass \rdata | \\
+	dataelement\ldata dataElement \rdata | \\
+	datatype\ldata dataType \rdata | \\
+	enumvalue\ldata enum \rdata
+\end{zed}
+
+We can say that DataModels contain DataItems, in fact a DataModel is an aggregation of DataItems, or to be specific DataClasses. DataClasses can contain other DataClasses, to an unbounded depth, although this may be restricted in future refinements. A DataModel may also be composed of DataElements. 
+
+We can also examine the relationship between DataClass and it's components by considering the instances or implementations, so by introducing a new set of schemas, we can represent a new \emph{CompositeDataModel} which specifies the fact that the entities in a CompositeDataModel will be either instances of DataModels or instances of DataItems.
+
+\begin{schema}{DataItemz}
+	instances: \finset ABSTRACTITEM\\
+\end{schema}
+
+\begin{schema}{DataModelz}
+	instances: \finset ABSTRACTITEM\\
+\end{schema}
+
+\begin{schema}{CompositeDataModel}
+	components: ABSTRACTITEM \rel DataItemz \\
+	datamodels: DataModelz\\
+	dataitems: DataItemz
+	\where
+	\langle datamodels.instances, dataitems.instances \rangle \\
+	\partition ABSTRACTITEM\\
+\end{schema}
+
+\subsubsection{Model Constraints}
+
+A DataModel will normally be a collection of DataClasses, which in turn will contain the other entities. It may also have one or more ModelConstraints, which we can model as follows:
+
+
+\begin{zed}
+	[DATAMODEL, DATACLASS, ABSTRACTITEM, \\
+	CONSTRAINT]
+\end{zed}
+
+
+\begin{schema}{ModelConstraintI}
+	instances: \finset CONSTRAINT\\
+\end{schema}
+
+\begin{schema}{DataClassI}
+	instances: \finset DATACLASS\\
+\end{schema}
+
+This schema is stating that a collection of DataModels will have a containment relationship with a number of DataClasses and with a number of ModelConstraints.  The predicates state that at an instance level the DataModel is composed of relationships between the DataModel and a number of DataClasses, and between a DataModel and a number of ModelConstraints. Furthermore an instance of the DataModel will not share classes between different DataModels, in effect there is one DataModel \emph{containing} many DataClasses.
+
+\begin{schema}{DataModelI}
+	instances: \power DATAMODEL \\
+	classez: DATAMODEL \rel DATACLASS \\
+	constraintz:  DATAMODEL \rel CONSTRAINT \\
+	relations: DATAMODEL \pfun Relationship \\
+	\where
+	\dom classez = instances \\
+	\dom constraintz = instances \\
+	\forall c:~\ran classez \spot \#(classez \rres\{c\}) = 1 \\
+	\forall c:~\ran constraintz \spot \#(constraintz \rres\{c\}) = 1\\
+\end{schema}
+
+
+
+The ModelConstraints can be written in any first order language, the obvious candidates are OCL and QVT, although Z and B could also be used, the net result is a model which contains zero or more constraints which apply to the model as a while.
+
+\begin{schema}{DataModelC}
+	dataModels : DataModelI \\
+	modelConstraints : ModelConstraintI \\
+	dataClasses: DataClassI \\
+	\where
+	\ran(dataModels.classez) = \\ dataClasses.instances \\
+	\ran(dataModels.constraintz) = \\ modelConstraints.instances
+\end{schema}
+
+
+
+
+\subsubsection{Identification}
+
+In priniciple we identify entities by using an id, so having introduced a set of identifiers based on URI's which we call\emph{IRI}'s, then we can define our identifiers using a schema:
+\begin{schema}{Identifier}
+	id:Id\\
+\end{schema}
+
+%%%%%%%%TBD%%%%%%%%
+
+A DataItem can also be identified within a model by using the idea of a Path, so that a DataModel containing a DataClass containing a DataElement can be represented thus \emph{DataModel.DataClass.DataElement} using names.
+
+\begin{zed}
+	Path == \seq Name 
+\end{zed}
+
+\begin{schema}{Data\_Items}
+	item : Id \pfun DataItem \\
+	items : \power Id \\
+	path : Id \pfun Id \pfun Path 
+\end{schema}
+
+\subsection{LinkedData and External Tagging}
+
+\subsubsection{RDF}
+
+We need to introduce a brief specification of the RDF data model since this will enable relationships to be established between \emph{Lemma Models} and Linked data elsewhere on the web.  This treatment is based on W3C definitions written to describe the RDF language and other associated languages \cite{RDF, RDFAS, RDFTurtle, RDFS, RDFSEM, RDFSL}.  An RDF Graph is a set of RDF triples, so that we have:
+\begin{zed} Graph == \power Triple
+\end{zed}
+
+An RDF triple consists of three items, the \emph{subject}, normally an \emph{IRI} or a \emph{blank node}; the \emph{predicate} normally an IRI, and the \emph{object} normally an IRI although it can also be either a \emph{blank node} or a \emph{literal}.
+\begin{zed}
+	[BlankNode, String, LanguageTag]
+\end{zed}
+\begin{schema}{TypedLiteral}
+	lexicalForm : String \\
+	rdfdatatype : IRI \\
+	RDFLangString : IRI
+	\where
+	rdfdatatype \neq RDFLangString
+\end{schema}
+
+\begin{schema}{PlainLiteral}
+	lexicalForm : String \\
+	rdfdatatype : IRI  \\
+	RDFLangString : IRI
+	\where
+	rdfdatatype = RDFLangString
+\end{schema}
+
+\begin{zed}
+	RDFLiteral ::=  pl\ldata PlainLiteral \rdata | \\ tl\ldata TypedLiteral \rdata
+\end{zed}
+IRI's extend URI's, they were introduced in 2005 to handle a much larger character set than the ASCII character set handled by the URI standard. Since for the most part in this document we use ASCII-based, unicode IRI's in English, we can assume that IRI's are synomymous with URI's, however since most of the semantic web definitions use the nomencature of IRI's we will adopt it also. IRI's, literals and blank nodes are described as \emph{RDFTerms}, so that:
+
+\begin{zed}
+	RDFTerm ::= iri\ldata IRI \rdata \\
+	| literal\ldata RDFLiteral \rdata \\
+	| bnode\ldata BlankNode \rdata 
+\end{zed}
+
+\begin{schema}{Triple}
+	subject, object, predicate : RDFTerm
+	\where
+	iri \inv subject \in IRI \lor bnode \inv subject \in \\ BlankNode \\
+	iri \inv predicate \in IRI \\
+	iri \inv object \in IRI \lor bnode \inv object \in \\ BlankNode \lor literal \inv object \in RDFLiteral\\
+\end{schema}
+
+
+\subsubsection{Tagging}
+
+Suppose we have a DataClass, with a name of Registration, which is part of a registration form for a university course.  It \emph{contains} a number of DataElements which correspond to \emph{data-points} or items if interest in the registration process. This course is a graduate level course, and since we need to exchange information perhaps with other universities we need to identify the type of course as such, so using the \emph{Tag} entity we can tag our DataClass with the label : \emph{Graduate Level Courses} and mark the IRI as being \emph{http://se.cs.ox.ac.uk/onto/softengmasters.owl\ \\ /GraduateCourse}
+
+A DataTag is never instantiated on it's own, it is always linked to a dataitem, and so provided external linkage, which can be then be assessed in any transformational or interoperability algorithms. At present this tagging process is not saying anything other than there is a link, it doesn't specify that the DataItem is the same as, different to, similar to or indicate any other semantic notion apart from \emph{there is a link}, until the optional \textbf{meaning} is entered, this can be:
+
+\begin{itemize}
+	\item  the same as
+	\item  similar to 
+	\item  representation of 
+	\item  simple tag
+\end{itemize}
+
+which we can define as a set of Free types in Z:
+\begin{zed}
+	[SAMEAS, SIMILARTO, REPRESENTEDBY, \\SIMPLETAG]
+\end{zed}
+
+
+\begin{zed}
+	TagType ::=  sa\ldata SAMEAS \rdata | si\ldata SIMILARTO \rdata |\\ rb\ldata REPRESENTEDBY \rdata | st\ldata SIMPLETAG \rdata
+\end{zed}
+
+\begin{schema}{Tag1}
+	name: Name \\
+	id: Id \\
+	ref: IRI \\
+	label: TagType \\
+	type: TagType
+	\where
+	sa \inv type \in SAMEAS \lor \\
+	si \inv type \in SIMILARTO \lor \\
+	rb \inv type \in REPRESENTEDBY \lor\\
+	st \inv type \in SIMPLETAG \\
+\end{schema}
+
+
+\subsection{A Registry or Catalogue}
+
+The purpose of Lemma is to model dataitems, it is in essence a DSL for data-centric applications. The prime use case for the language is to define the workings of a model driven metadata registry, which we have termed a Models Catalogue.   A catalogue is an indexed collection of items. 
+
+
+\begin{schema}{Catalogue\_Items}
+	item : Id \pfun DataItem \\
+	items : \power Id \\
+	path : Id \pfun Id \pfun Path 
+\end{schema}
+
+We introduce names for the sets of identifiers pointing to different
+kinds of items:
+
+\begin{schema}{Catalogue\_Sets}
+	datamodels, modelconstraints, dataclasses,\\ dataelements, enumerations, \\
+	datatypes, primitivetypes, enums, \\final : \power Id 
+\end{schema}
+
+As well as the internal relationships and external relations we introduce `global' relationships implied by the reference-value attributes $refines$ and $newVersionOf$:
+%%inrel \refines \newVersionOf
+\begin{schema}{Catalogue\_Links}
+	\_ \refines \_, \_ \newVersionOf \_ : Id \rel Id 
+\end{schema}
+
+Similarly, we introduce the global relationships implied by extension and containment: 
+%%inrel \contains \extends
+\begin{schema}{Catalogue\_Structure}
+	\_ \contains \_, \_ \extends \_ : Id \rel Id \\
+	datamodel : Id \pfun Id \\
+	contents, scope : Id \pfun \power Id \\
+	values : Id \pfun \power Value 
+\end{schema}
+
+We may now describe catalogue properties in terms of the combination of all of these identifiers:
+
+\begin{schema}{Catalogue\_Decs}
+	Catalogue\_Items \\
+	Catalogue\_Sets \\
+	Catalogue\_Links \\
+	Catalogue\_Structure
+\end{schema}
+
+\subsection{Consistency and derivation}
+
+\begin{schema}{Catalogue\_Items\_Derivation}
+	Catalogue\_Decs 
+	\where
+	\dom item = items \\
+	\forall m : datamodels ; i : items \spot {} \\ \t1 
+	\LET c == (\mu x : dataclasses \mid i \in \\(item~x).elements) \spot
+	{} 
+	\\ \t2 
+	path~m~i = \langle (item~m).name, \\(item~c).name, (item~i).name
+	\rangle 
+\end{schema}
+
+\begin{schema}{Catalogue\_Sets\_Derivation}
+	Catalogue\_Decs
+	\where 
+	datamodels = \{ i : \dom item \mid (item~i).kind =\\ \datamodel \} \\
+	dataclasses = \{ i : \dom item \mid (item~i).kind =\\ \dataclass \} \\
+	dataelements = \{ i : \dom item \mid (item~i).kind =\\ \dataelement \} \\
+	enumerations = \{ i : \dom item \mid (item~i).kind =\\ \enumeration \} \\
+	primitivetypes = \{ i : \dom item \mid (item~i).kind =\\ \primitivetype \} \\
+	enums = \{ i : \dom item \mid (item~i).kind = \enum \} \\
+	\dom item = \bigcup \{ datamodels, dataclasses, \\ dataelements, enumerations, \\ primitivetypes, enums \} \\
+	final = \bigcup \{~i : datamodels \mid (item~i).status =\\ \final \spot \{ i \}
+	\cup contents~i~\} 
+\end{schema}
+
+\begin{schema}{Catalogue\_Links\_Derivation}
+	Catalogue\_Decs 
+	\where 
+	(\_ \newVersionOf \_) \in datamodels \\ \rel datamodels \\
+	(\_ \refines \_) \in {} \\ \t1 
+	(dataclasses \rel dataclasses) \cup \\(dataelements \rel dataelements) \cup \\ (enums \rel enums) \\
+	\forall i,j : \dom item \spot {} \\
+	\t1 i \newVersionOf j \iff j \in \\(item~i).newVersionOf \land {} \\
+	\t1 i \refines j \iff j \in (item~i).refines 
+\end{schema}
+
+That is, only datamodels are versioned, and every semantic link---$\refines$---connects two items of the same kind, whether these are classes, elements, or values.
+
+One dataitem is contained within another if it is declared and managed in the context of that other dataitem: for example, every dataelement is declared in the context of a unique dataclass, and every dataitem is declared in the context of a model.  For convenience, we define not only a $contains$ relation, between references, but also a $contents$ function, returning references to all of the items contained within a referenced item.
+
+For inheritance we use an $extends$ function arguably is more straightforward. 
+
+\begin{schema}{Catalogue\_Structure\_Derivation\_Contents}
+	Catalogue\_Decs
+	\where
+	\forall m : datamodels \spot contents~m = {} \\
+	\t1 (item~m).dataclasses \cup\\ (item~m).enumerations \cup
+	(item~m).primitivetypes \cup {} \\
+	\t1 \bigcup \{~c : (item~m).dataclasses \spot contents~c~\} \cup {} \\
+	\t1 \bigcup \{~n : (item~m).enumerations \spot contents~n~\}
+	\\
+	\forall c : dataclasses \spot contents~c = {} \\
+	\t1 (item~c).elements  \cup {} \\
+	\t1 \bigcup \{~s : (item~c).components \spot contents~s ~\}
+	\\
+	\forall n : enumerations \spot contents~n = (item~n).enums
+	\\
+	\dom contents =\\ \bigcup \{ datamodels, dataclasses, enumerations \} 
+	\\
+	\bigcup (\ran contents) =\\ \bigcup \{ dataclasses, dataelements, enumerations,\\ enums,
+	primitivetypes \} 
+	\\
+	\forall i : \dom item \spot contents~i = (\_ \contains \_)\\ ~\limg \{ i \}
+	\rimg \\
+	(\_ \extends \_) \in dataclasses \rel dataclasses \\
+	\forall c, d : dataclasses \spot c \extends d \iff 
+	d \in \\(item~c).extends
+\end{schema}
+
+That is, the contents of a datamodel includes the contents of any dataclasses and enumerations that it contains, a dataclass contains its dataelements, and an enumeration contains its values.  Only datamodels, dataclasses, and enumerations have contents, and only dataclasses, dataelements, enumerations,
+values, and primitivetypes---not datamodels---can be contained. 
+
+A related but not equivalent notion is that of the `scope' of a model. This is a set of references to every item contained within that model, or contained within a model that it `imports'. 
+
+\begin{schema}{Catalogue\_Structure\_Derivation\_Scope}
+	Catalogue\_Decs
+	\where
+	\dom scope = datamodels 
+	\\
+	\forall m : datamodels \spot scope~m = \\contents~m \cup \bigcup 
+	( contents~ \limg (item~m).imports \rimg )
+\end{schema}
+
+It will be convenient also to consider the inverse relational image of the closure of this function.  For any non-model item in the catalogue, this will return a reference to the unique model containing that item. 
+
+\begin{schema}{Catalogue\_Structure\_Derivation\_Model}
+	Catalogue\_Decs
+	\where
+	\dom datamodel = \bigcup \{ dataclasses, dataelements, \\enumerations, enums,
+	primitivetypes \} \\
+	datamodel = ((\_ \contains \_)\star)\inv \rres datamodels
+\end{schema}
+
+\begin{zed}
+	Catalogue\_Structure\_Derivation \defs {} \\ \t1 
+	Catalogue\_Structure\_Derivation\_Contents \land {} \\ \t1 
+	Catalogue\_Structure\_Derivation\_Scope \land {} \\ \t1 
+	Catalogue\_Structure\_Derivation\_Model   
+\end{zed}
+
+\begin{zed}
+	Catalogue\_Derivation \defs {} \\ \t1 
+	Catalogue\_Sets\_Derivation \land {} \\ \t1 
+	Catalogue\_Links\_Derivation \land {} \\ \t1 
+	Catalogue\_Structure\_Derivation 
+\end{zed}
+
+\section{Catalogue Properties}
+
+A model can import only models known to the catalogue.
+
+\begin{schema}{Catalogue\_Imports}
+	Catalogue\_Decs 
+	\where
+	\forall m : datamodels \spot (item~m).imports\\ \subseteq datamodels
+\end{schema}
+
+Every reference to a type must be to a datatype known to the catalogue: a known dataclass, enumeration, or primitivetype. 
+
+\begin{schema}{Catalogue\_TypesDefined}
+	Catalogue\_Decs
+	\where
+	\forall e : dataelements \spot (item~e).type \in \\dataclasses \cup enumerations \cup primitivetypes 
+\end{schema}
+
+A model may be a new version only of a finalised model.  A model may be final only if all imported models are also final.  An item may be finalised only if all of its outgoing semantic links are to finalised dataitems.
+
+\begin{schema}{Catalogue\_Final}
+	Catalogue\_Decs
+	\where
+	\ran (\_ \newVersionOf \_) \subseteq final \\
+	\forall f : final \cap datamodels \spot (item~f).imports \subseteq final \\
+	(\_ \refines \_) \limg final \rimg \subseteq final 
+\end{schema}
+
+\begin{zed}
+	Catalogue\_Properties \defs {} \\ \t1
+	Catalogue\_Imports \land {} \\ \t1 
+	Catalogue\_TypesDefined \land {} \\ \t1
+	Catalogue\_Final 
+\end{zed}
+
+\subsection{Semantics}
+
+The `semantics' of a data element is a mapping from possible values to it meaning, which is arguably is the same as its interpretation or at least its intended interpretation.  We can introduce the idea of \emph{meaning} or \emph{intended interpretation} as a set:
+
+\begin{zed}
+	[Interpretation]
+\end{zed}
+
+The meaning of a dataitem will vary and can be changed depending upon its context which in turn will depend upon:
+\begin{itemize}
+	\item the text describing the value
+	\item the text describing the value type (primitive or enumerated)
+	\item the text describing the dataelement
+	\item the text describing the dataclass in which the dataelement is defined,
+	and any dataclasses `containing' that dataclass
+	\item the text describing the datamodel containing the dataelement
+	\item the text of any item that these items are linked to using $\refines$ 
+	\item the modelconstraints acting upon the DataModel in which the dataelement is defined.
+\end{itemize}
+Any of this text or constraints may have something specific to say about a given data element.  
+
+Semantics is given in the context of a catalogue state: if we add a notion of interpretation, and identify the set of possible values of each element, subject to any applicable constraints, then we can derive a notion of semantics. A dataelement may be subjected to additional constraints when the datamodel that contains it is imported into another.   Its semantics could be narrowed.  
+
+When a dataclass is used as a type, the set of corresponding values is unconstrained: we know only that they should be references.   
+\begin{axdef}
+	Ref : \power Value 
+\end{axdef}
+
+We will want to know which values are associated with which elements if we are to arrive at the semantics of any dataelement.
+
+\begin{schema}{Catalogue\_Values}
+	Catalogue\_Decs
+	\where
+	\forall n : enumerations \spot {} \\ \t1 
+	values~n = \{~ v : (item~n).enums \spot\\ (item~v).value ~\} \\
+	\forall p : primitivetypes \spot {} \\ \t1 
+	value~p = (item~p).values \\
+	\forall c : dataclasses \spot {} \\ \t1 
+	values~c = Ref \\
+	\forall e : dataelements \spot {} \\ \t1 
+	values~e = values~((item~e).type) 
+\end{schema}
+
+The semantics of a data element is a mapping from values to contextualised interpretations. Constraints, rules and text can contribute to the semantics of a dataelement. What is interesting is which pieces of text contribute to the semantics of a value. 
+
+\begin{zed}
+	Semantics == Value \pfun Text
+\end{zed}
+
+We will need to conjoin text: 
+%%inop \Tand 3
+\begin{axdef}
+	\_ \Tand \_ : (Text \cross Text) \fun Text \\
+	\TAnd : \power Text \pfun Text 
+\end{axdef}
+
+The context of an item comprises:
+\begin{itemize}
+	\item the text of the item;
+	\item the text of any item containing it;
+	\item the text of any item that it refines. 
+\end{itemize}
+
+The second of these creates a potential problem if a model is imported and additional text comes into play, further constraining the interpretation of an element in the imported model.  We will analyse the consequences and put in place a sufficient condition to avoid it happening.
+
+\begin{schema}{Catalogue\_Context}
+	Catalogue\_Decs \\
+	context : Id \pfun Text 
+	\where
+	context \in items \fun Text \\
+	\forall i : items \spot context~i = {} \\ \t1
+	(item~i).text \Tand \\ \t1
+	\TAnd \{~ j : items \mid j \contains i \\ \spot context~j ~\}
+	\Tand \\ \t1
+	\TAnd \{~ j : (item~i).refines\\ \spot context~j ~\} 
+\end{schema}
+
+\begin{schema}{Catalogue\_Semantics}
+	Catalogue\_Context \\
+	Catalogue\_Values \\
+	semantics : Id \pfun Semantics
+	\where
+	semantics \in dataelements \fun Semantics \\
+	\forall e : dataelements \spot {} \\ \t1 
+	%%(
+	\LET t == (item~e).type \spot \\ \t2 
+	t \in enumerations \implies {} \\ \t3 
+	semantics~e = 
+	\{~ n : (item~t).enums\\ \spot 
+	(item~n).value \mapsto context~e \Tand context~n ~\} 
+	\land {} \\ \t2
+	t \in primitivetypes \implies {} \\ \t3
+	semantics~e = \{~ v : (item~t).values\\ \spot 
+	v \mapsto context~e \Tand context~t ~\} 
+	%%)
+\end{schema}
+
+\begin{zed}
+	Catalogue \defs {} \\ \t1 Catalogue\_Derivation \land
+	Catalogue\_Properties\\ \land Catalogue\_Semantics
+\end{zed}
+
+\section{Operations}
+
+
+
+\subsection{Finalisation}
+
+\begin{schema}{Model\_Finalise}
+	\Delta DataModel 
+	\where 
+	\Xi AbstractItem \\
+	status = \draft \\
+	status' = \final \\
+	classes' = classes \\
+	enumerations' = enumerations \\
+	primitives' = primitives \\
+	imports' = imports \\
+	constraint' = constraint
+\end{schema}
+
+\subsection{Create new version}
+
+\begin{schema}{Model\_New\_Version}
+	\Delta DataModel \\
+	g! : GUID
+	\where 
+	guid = g! \\
+	status = \final \land status' = \draft \\
+	name' = name \\
+	text' = text \\
+	kind' = kind \\
+	dataclasses' = dataclasses \\
+	enumerations' = enumerations \\
+	primitivetypes' = primitivetypes \\
+	imports' = imports \\
+	constraint' = constraint
+\end{schema}
+
+
+\begin{schema}{Model\_Add\_Model\_As\_Import}
+	\Delta DataModel \\
+	m2? : Id 
+	\where
+	guid = guid' \\
+	status = status' = \draft \\
+	name' = name \\
+	text' = text \\
+	kind' = kind \\
+	dataclasses' = dataclasses \\
+	enumerations' = enumerations \\
+	primitivetypes' = primitivetypes \\
+	imports' = imports \cup \{ m2? \} \\
+	constraint' = constraint
+\end{schema}
+
+
+\subsection{Practical Implementation of MML}
+MML is defined using Z in the previous section. It could also be viewed as the minimum subset of Ecore needed to model datasets, and hence we are able, by relating the metamodel defined by MML to Ecore, to use many of the previously developed eclipse modelling tools to test out our hypothesis.
+
+ The XText language workbench was chosen because it provides the ability to load in a grammar, in a very similar manner to ANTLR, and generate most of the language artefacts from there, a plugin for the eclipse workbench and code generators which allow to implement the language with relatively minimal effort.
+
+\subsubsection{MML Grammar}
+
+The following section shows the code used to define the XText grammar, which is used to generate an ECore meta-model, which in turn is used to define the different datasets used in this project.
+\begin{small}
+	\begin{verbatim}
+grammar uk.ac.ox.cs.MML with 
+org.eclipse.xtext.common.Terminals
+
+generate mML "http://www.ac.uk/ox/cs/MML"
+
+MML :
+(elements += AbstractItem)*
+;
+
+
+DataModel:
+'DataModel' name = QualifiedName '{'
+(elements += AbstractItem)*
+'}'
+;
+
+AbstractItem:
+DataModel | DataClass | DataType | Import
+;
+
+QualifiedName:
+ID('.' ID)*
+;
+
+Import:
+'import' importedNamespace = 
+          QualifiedNameWithWildcard
+;
+
+QualifiedNameWithWildcard:
+QualifiedName '.*'?
+;
+
+
+DataType:
+'DataType' name = ID
+;
+
+ContainerElement:
+DataClass| DataElement
+;
+
+DataClass:
+'DataClass' name = ID ('extends' superType =
+              [DataClass])? '{'
+(dataelements += ContainerElement)*
+'}'
+;
+
+DataElement:
+'DataElement' name = ID ':' type =  
+                         [DataType|QualifiedName]
+;
+	\end{verbatim}
+\end{small}
+
+
+
+
+
+
+
+\end{document}
+
